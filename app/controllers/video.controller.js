@@ -3,9 +3,10 @@ var Video = require('../models/video.model');
 var list = function(req, res) {
 	Video.find(function(err, videos) {
 		if (err) {
-			res.send(err);
+			res.json({error: err.message});
+		} else {
+			res.json(videos);
 		}
-		res.json(videos);
 	});
 };
 
@@ -16,55 +17,63 @@ var create = function(req, res) {
 
 	video.save(function(err) {
 		if (err) {
-			res.send(err);
+			res.json({error: err.message});
+		} else {
+			res.json({confirmation: 'succeed'});
 		}
-
-		res.json({message: 'video created!'});
 	})
 };
 
 var read = function(req, res) {
 	Video.findById(req.params.video_id, function(err, video) {
 		if (err) {
-			res.send(err);
+			res.json({error: err.message});
+		} else {
+			res.json(video);
 		}
-
-		res.json(video);
 	});
 };
 
 var update = function(req, res) {
-	Video.findById(req.params.video_id, function(err, video) {
-		if (err) {
-			res.send(err);
-		}
+	Video.findById(req.params.video_id, function(finderr, video) {
+		if (finderr) {
+			res.json({error: finderr.message});
+		} else {
+			if (video !== null) {
+				video.title = req.body.title;
+				video.url = req.body.url;
 
-		video.title = req.body.title;
-		video.url = req.body.url;
-
-		video.save(function(err) {
-			if (err) {
-				res.send(err);
+				video.save(function(saveerr) {
+					if (saveerr) {
+						res.json({error: saveerr.message});
+					} else {
+						res.json({confirmation: 'succeed'});
+					}
+				});
+			} else {
+				res.json({error: 'video not found'})
 			}
-
-			res.json({message: 'video updated!'});
-		});
+		}
 	});
 };
 
 var del = function(req, res) {
-	Video.findById(req.params.video_id, function(err, video) {
-		if (err) {
-			res.send(err);
-		}
-
-		video.remove(function(err) {
-			if (err) {
-				res.send(err);
+	Video.findById(req.params.video_id, function(finderr, video) {
+		if (finderr) {
+			res.json({error: finderr});
+		} else {
+			if (video !== null) {
+				video.remove(function(delerr) {
+					if (delerr) {
+						res.json({error: delerr});
+					} else {
+						res.json({confirmation: 'succeed'});
+					}
+				});
+			} else {
+				res.json({error: 'video not found'});
 			}
-
-			res.json({message: 'video deleted!'});
-		});
+		}
 	});
 };
 
